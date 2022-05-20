@@ -8,12 +8,12 @@
   
   
   
-  <title>Dp0rt&#39;s Blog</title>
+  <title>一次打红队的记录 | Dp0rt&#39;s Blog</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   
-    <meta name="keywords" content="Hexo, theme-bmw" />
+    <meta name="keywords" content="杂谈,红队攻防," />
   
 
   <script>
@@ -182,139 +182,118 @@
 </script>
 
       
-<div class="container home-index">
-  
-  <div class="post">
-    <h1 class="article-title">
-      <a href="/2022/05/20/%E4%B8%80%E6%AC%A1%E6%89%93%E7%BA%A2%E9%98%9F%E7%9A%84%E8%AE%B0%E5%BD%95/">
-        <span>一次打红队的记录</span>
-      </a>
-    </h1>
-    <!-- PC端文章信息 -->
-    <div class="article-top-meta pc-view">
-      <span>
-        发布时间 : 2022-05-20
-      </span>
-    </div>
-    <!-- 移动端文章信息 -->
-    <div class="article-top-meta mobile-view">
-      <span>
-        发布 : 2022-05-20
-      </span>
-      
-        <span>
-        分类 :
-          <a href="/categories/%E6%9D%82%E8%B0%88/">
-            杂谈
-          </a>
-        </span>
-      
-      
-    </div>
-    
-    <!-- 文章简介 -->
-    <div class="article-content">
-      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
-        <p>记一次长达十天的红队攻防</p>
-      </div>
-    </div>
-    <div class="article-footer">
-      <div class="article-meta pull-left">
-        <!-- 分类pc端可见 -->
-        <span class="pc-view">
-          
-            <i class="iconfont icon-tag"></i>分类:
-            <a href="/categories/%E6%9D%82%E8%B0%88/">
-              杂谈
-            </a>
-          </span>
-          
-        <span>
-          
-            <i class="iconfont icon-06tags"></i>标签:
-            
-              <span class="span--tag">
-                <a href="/tags/%E7%BA%A2%E9%98%9F%E6%94%BB%E9%98%B2/">
-                  #红队攻防
-                </a>
-              </span>
-            
-                    
-        </span>
-      </div>
-      
-    </div>
-  </div>
-  
-  <div class="post">
-    <h1 class="article-title">
-      <a href="/2022/03/31/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/">
-        <span>我的第一篇文章</span>
-      </a>
-    </h1>
-    <!-- PC端文章信息 -->
-    <div class="article-top-meta pc-view">
-      <span>
-        发布时间 : 2022-03-31
-      </span>
-    </div>
-    <!-- 移动端文章信息 -->
-    <div class="article-top-meta mobile-view">
-      <span>
-        发布 : 2022-03-31
-      </span>
-      
-        <span>
-        分类 :
-          <a href="/categories/%E6%9D%82%E8%B0%88/">
-            杂谈
-          </a>
-        </span>
-      
-      
-    </div>
-    
-    <!-- 文章简介 -->
-    <div class="article-content">
-      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
-        <p>Blog的开始</p>
-      </div>
-    </div>
-    <div class="article-footer">
-      <div class="article-meta pull-left">
-        <!-- 分类pc端可见 -->
-        <span class="pc-view">
-          
-            <i class="iconfont icon-tag"></i>分类:
-            <a href="/categories/%E6%9D%82%E8%B0%88/">
-              杂谈
-            </a>
-          </span>
-          
-        <span>
-          
-            <i class="iconfont icon-06tags"></i>标签:
-            
-              <span class="span--tag">
-                <a href="/tags/%E9%9A%8F%E7%AC%94/">
-                  #随笔
-                </a>
-              </span>
-            
-                    
-        </span>
-      </div>
-      
-    </div>
-  </div>
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
   
 
-  <nav class="page-navigation">
+<div class="post">
+  <h1 class="article-title">
+    <span>一次打红队的记录</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2022-05-20
+    </span>
+    
+      <span>
+        分类 : 
+          <a href="/categories/%E6%9D%82%E8%B0%88/">
+            杂谈
+          </a>
+      </span>
+    
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>实习一段时间了，第一次去现场打红队，刚去的时候蛮紧张的，第一次，过去后发现环境特好，感觉与想象中的红队不一样。开始想着摸鱼，等公司外面的大佬打，开始这大公司就是牛啊，资产范围广的不行，打了几天发现红队还是注重信息收集，收集一些别人收集不到的资产，那种拿0day打的就算了，我这种菜鸡水平不够，就只能找各种弱口令后台拿shell、nday、rce之类的。其他洞基本没啥用，之前渗透做的比较多，红队这一块做得少，感觉区别还是挺大的，渗透就一直挖洞，有洞就有产出，红队要直接拿shell，突破网络边界进去到目标内网去进行内网渗透吗。侧重点就不一样了。在现场基本我们就只找弱口令，sql，框架组件洞，还别说，但是弱口令还真不少，还是给我们拿了不少shell，虽然都没啥用，有几个shell刚拿到没多久，就掉了。应急响应速度还是很快的。唯一一个比较有意思的还是钓鱼，通过一个系统对其内部员工批量钓鱼，可能第一次钓鱼业务不熟练，开始话术没设计好，当时看他们都做了几个人了，怎么还没上线cs，然后弄了个反馈后，有一个员工有理有据的写了一段话，我在后台看了后，感觉有道理，觉得之前设计的钓鱼话术不太合理，后面重新设计话术重新下发后成功钓到了一个，也因为动静太大了，之前没设计好，系统马上就被T下线了，在办公网扫了扫没啥，就止步于此。总结了下，第一次打红队准备还是有点不足的，许多内网渗透的工具都没带过来（开始觉得自己打不进去，有蓝队防守）。后面进到内网后就有点懵逼了，工具都没拷进来。后面就在cs上看公司外面大佬的操作，感觉自己不足的地方还很多：<br>        1、工具准备不足、使用不熟练，很多工具理论上我知道这个情况要用这个工具，但是没有实际实践操作过<br>        2、信息收集这块还得多实践，多搜集一些超级边缘的资产有惊喜<br>        3、进入到内网后，思路不清晰，有点手足无措，就简单在机器上翻了翻，没有收集到有用信息（后面看到外面大佬把浏览器存储的账号密码拖出来了，上面有各种敏感系统的账号密码啥的）<br>        4、知识面不够广，有些东西遇到都不知道是啥，问半天+百度，才解决。</p>
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Dp0rt <br/>
+        
+        原文链接 : <a href="">http://dp0rt.github.io/2022/05/20/%E4%B8%80%E6%AC%A1%E6%89%93%E7%BA%A2%E9%98%9F%E7%9A%84%E8%AE%B0%E5%BD%95/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share"
+  style="margin-top: -2rem"
+  data-wechat-qrcode-title="<p>微信扫一扫</p>"
+  data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>"
+   data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter" 
+  
+>
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async>
+  
+
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/%E7%BA%A2%E9%98%9F%E6%94%BB%E9%98%B2/">
+              #红队攻防
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+  <aside id="sidebar">
+    <p id="sidebar-header"></p>
+    <ol id="sidebar-toc"></ol>
+  </aside>
+  <script async>setTimeout(generateToc, 10);</script>
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2022/03/31/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" target="_self">我的第一篇文章</a>
+      </div>
     
     
   </nav>
 
    
+
+   
+
 </div>
 
 
