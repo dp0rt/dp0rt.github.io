@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>某后台管理系统任意文件上传0Day</title>
+      <link href="/2023/07/16/%E6%9F%90%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A00Day/"/>
+      <url>/2023/07/16/%E6%9F%90%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A00Day/</url>
+      
+        <content type="html"><![CDATA[<div class="hbe hbe-container" id="hexo-blog-encrypt" data-wpm="不知道密码你看啥." data-whm="OOPS, these decrypted content may changed, but you can still have a look.">  <script id="hbeData" type="hbeData" data-hmacdigest="db633090fb1145b1fca0634b125cbb9b22843720baaabc23e6b6e66b02e54872">92aa9bd1b795b44ed0b8aaf72b1071e409f845bd2da94090569a6f872922ec7951a9607cfb792b0e3ffe027b21368751dc3538344ddbe2e5a295b3e6c192581a4dbcf73a66edbedaad7545954d1e8d4756cd8899ce63de4a47b070bb6957ace15f80b287571bcf2eb286ca98840c17bfb40ba3b712ae6bdecd867bacec3305ea4d2b8f4ecbe73edabbc6fc834cd7da459432ef1d29650b907095cd347ed8d6c4c63fe87e154b339c329bfe44280f1dba3ad3b09b0f18cb247b3b2b9317d6cb8fb3e845acafbaab9be585781a78d3073745f4fc64a91d253e50725827bd5b98490283a0d3749c33085a642975c3befc756243eff209e4b8f6465066a33a6ad25861c20d1bbccc073967bd91d8c53eefda8392e9ce0979e1ffd36fa73ae0dd1962ab1f3584f6607b7aa4d5f9713f2b9538317f6bd8290a00101253a2451107956eb22607a556acb9699352a67feaa379396041d011bcde644bb747daf6e54015a218d2c5cfe1593f7d334a5c57e8e8839721b272b87e152abe32c6041ad0b7733e1ea035a1e3d6b0caf94f62bec7aed351aaa002674d1ccec4c3f1787d81695dff8332770b2cc4a0f516cc26f9747f88c67c3deed454f4e0af18fe0adeb60e5341ce0ac8c4627ec72ef70a2ddd8af18fe0310b3213bcdc8e51fb2aabc0283c7f56b5e29df3b47c788da8045ac6b263298daa49c2dca0dc3c02eb1b1b3bf69f253fb20b41ca925d0eff245ce934fdc9eac3e3ec5c281ec3a5051891d5e1e85de58e6b1db17ba2aa56d5e0a32102ac372fb97c0101e89b1d2915264be8e2b4f42d43fd2849a215831832bd1d1a6c09977c536f2537f4d7b9bbb8039d3747d5ccafa18180aad8d3d34a955f3bf2f93ddf3540ecbd6e79aae02aacda5398394dfb855c9c7b74a900c045d8d477f1a606901a152129b696edf305e191edbea808f93b7214f00cd3e80714a8bc411047327c142bb118f7afb2e47827f40b8fa5f2b3ebf3e6f4c7b32ca471fa1f8798ae9c08fd75c453cf2012afb7533c0a3b5f0de9587b81d9d3de9c45d68f1aee6d0cf5b444b6a8522889e5b1512fc2341048b620f1d8e3dcbdaff9072d91555f18debd175aba2f4f662eea5673418a50a296880cfdbfd839caa4a381981fa329af1f6a4ae3f41a7f9e58ab299b9a7123b5330541c0ffc7341469d67268aeccf63688518ef58649aab58cca79f5eb73f139c458302a46295cc129b862c0be937d01a7918d73cc39a22c5f9c361c768ff03a2250e6afa52546c571930081ef041b6cdeb91ce57e9df5407a9cd768a419b861755686c8417dcf1a0403ebc851a6f7a9df94bae93f03db4f9617b31e07c3a290b8ccd979a8e3e542179d06b898bf04d0d835065b741e587f75d0178e73b750d7597afc741c95b64da577a4a5184f2d875a465831c67c88121171f65b49b561eb279578f24786521d1f9c6d3b348c7a917c21790f71b2e6fedaf5a646cdd223db90fb213b4f21add36a8f188964cab0723bf5096e32a6441d3878696ae216d865a799fd47e0ca98adb26c98484a96f4329c41ecba6b18f9867e19f552650916b84f3038fade912af1c15d51db5eeffedd08cc7723f63a04fe78ceb20adfe024ed983eb6579ca52d10759a2dc46a8064ac81ba5ca88dbfd51a74754958cf17c815fc6be70e38766e6c4f984c87faf27534496cf0205c4fdfcb1efe09335d1e1bbcd7944471e43311b73ace93cf4f2de9b7946a6dd7f2dc8ff367952f35b97c6317982080140e458bd32dcea159257b3b923dfd86e16226045875ff28575294d73ddb674a5283</script>  <div class="hbe hbe-content">    <div class="hbe hbe-input hbe-input-default">      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">        <span class="hbe hbe-input-label-content hbe-input-label-content-default">请输入密码查看.</span>      </label>    </div>  </div></div><script data-pjax src="/lib/hbe.js"></script><link href="/css/hbe.style.css" rel="stylesheet" type="text/css">]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 0Day </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>从ring3绕过AV hook</title>
       <link href="/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/"/>
       <url>/2023/07/12/%E4%BB%8Ering3%E7%BB%95%E8%BF%87AV%20hook/</url>
